@@ -11,7 +11,9 @@ jobs:
       - run: npm ci && npm test
       # Project site: "/${{ github.event.repository.name }}/". Custom domain: set repo variable BASE_PATH to "/".
       - run: npm run build
-        env: { VITE_BASE_PATH: "${{ vars.BASE_PATH || format('/{0}/', github.event.repository.name) }}" }
+        env:
+          VITE_BASE_PATH: "${{ vars.BASE_PATH || format('/{0}/', github.event.repository.name) }}"
+          VITE_UPLOAD_API_URL: "${{ vars.VITE_UPLOAD_API_URL }}"
       - uses: actions/upload-pages-artifact@v3
         with: { path: dist }
   deploy:

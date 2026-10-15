@@ -12,8 +12,16 @@ Edit names/welcome text/limits in `src/config/wedding.ts`.
 Repo Settings → Pages → Source: GitHub Actions. Push to `main`; `.github/workflows/deploy.yml` builds and deploys.
 Base path: defaults to `/<repo-name>/`. For a custom domain set the repo variable `BASE_PATH` to `/`. Locally: `VITE_BASE_PATH=/repo/ npm run build`.
 
-## Phase 2 (Google Drive) still to do
-1. Backend endpoint (e.g. serverless function) holding Google service-account credentials server-side only.
-2. Implement `PhotoUploadService` as an HTTP client (signed/resumable upload to Drive); swap it in `photoUploadService.ts`.
-3. Abuse protection (rate limits, size/type checks, optional event token), CORS for your domain, retries/backoff.
-4. Confirm HEIC handling and real-device camera testing on iOS Safari and Android Chrome.
+## Google Drive uploads (Vercel)
+
+The frontend is still hosted on GitHub Pages. Deploy this same repository to Vercel to host only `api/upload`.
+
+1. In Google Cloud, create a service account, enable the Google Drive API, and create a JSON key. Create a dedicated Google Drive folder and share it with the service account's email address as **Editor**.
+2. Import the repository into Vercel. Add these Production environment variables there (never in GitHub Pages or the frontend):
+   - `GOOGLE_SERVICE_ACCOUNT_JSON`: the complete JSON from the service-account key.
+   - `GOOGLE_DRIVE_FOLDER_ID`: the ID in the Drive folder URL.
+   - `ALLOWED_ORIGIN`: `https://photos.birdistudios.com`
+3. Set the GitHub repository variable `VITE_UPLOAD_API_URL` to `https://YOUR-VERCEL-PROJECT.vercel.app/api/upload`. GitHub Pages injects this during its existing build.
+4. Redeploy GitHub Pages. Uploads are JPEG, PNG, or WebP and must be no larger than 4 MB. The app processes selected images into JPEG before sending them.
+
+The endpoint accepts only the configured site origin and stores photos in the selected Drive folder. It does not expose Drive credentials or make photos public. Before the event, test on an iPhone and an Android phone with a Drive folder created specifically for the wedding.
