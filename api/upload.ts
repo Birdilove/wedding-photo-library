@@ -23,7 +23,10 @@ function driveAuth() {
 
   const credentials = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (credentials) return new google.auth.GoogleAuth({ credentials: JSON.parse(credentials), scopes: ['https://www.googleapis.com/auth/drive.file'] });
-  throw new Error('Upload service is not configured.');
+
+  // Names only, never values: shows which variable the running deployment cannot see.
+  const missing = ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN'].filter(name => !process.env[name]);
+  throw new Error('Upload service is not configured. Missing: ' + missing.join(', '));
 }
 
 function applyCors(request: VercelRequest, response: VercelResponse) {
@@ -72,7 +75,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     }
 
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-    if (!folderId) throw new Error('Upload service is not configured.');
+    if (!folderId) throw new Error('Upload service is not configured. Missing: GOOGLE_DRIVE_FOLDER_ID');
     const drive = google.drive({ version: 'v3', auth: driveAuth() });
     const uploaded = await drive.files.create({
       requestBody: { name: safeName(metadata.originalName || photo.originalFilename || undefined), parents: [folderId], description: JSON.stringify({ source: metadata.source, width: metadata.width, height: metadata.height, capturedAt: metadata.capturedAt }) },
