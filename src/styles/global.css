@@ -33,7 +33,3 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 .pstat{font-size:.85rem;color:var(--mute)}.saved .pstat{color:var(--ok)}.failed .pstat{color:var(--bad)}.prow .link{grid-column:2/4;justify-self:start;min-height:36px}
 .finishing h3{font:400 1.5rem var(--serif);text-align:center}.err{color:var(--bad);margin:4px 0}.hint{color:var(--mute)}
 @media (prefers-reduced-motion:no-preference){.btn,.shutter{transition:transform .1s}}
-.cue{font:italic 1.35rem/1.4 var(--serif);color:var(--accent);margin:0 0 6px}
-.cuebar{margin:0;text-align:center;font:italic 1.05rem var(--serif);color:var(--accent)}
-.mirror{transform:scaleX(-1)}
-.flip{position:absolute;top:12px;right:12px;width:48px;height:48px;border-radius:50%;border:0;background:rgba(251,247,240,.9);color:var(--ink);font-size:1.5rem;cursor:pointer}.flip:disabled{opacity:.5}

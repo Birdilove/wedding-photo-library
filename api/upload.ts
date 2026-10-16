@@ -9,7 +9,7 @@ export const config = { api: { bodyParser: false } };
 const maxUploadBytes = 4 * 1024 * 1024;
 const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
-type Metadata = { source?: 'camera' | 'device'; originalName?: string; width?: number; height?: number; capturedAt?: string; cue?: string };
+type Metadata = { source?: 'camera' | 'device'; originalName?: string; width?: number; height?: number; capturedAt?: string };
 
 function driveAuth() {
   const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
@@ -78,7 +78,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     if (!folderId) throw new Error('Upload service is not configured. Missing: GOOGLE_DRIVE_FOLDER_ID');
     const drive = google.drive({ version: 'v3', auth: driveAuth() });
     const uploaded = await drive.files.create({
-      requestBody: { name: safeName(metadata.originalName || photo.originalFilename || undefined), parents: [folderId], description: JSON.stringify({ source: metadata.source, width: metadata.width, height: metadata.height, capturedAt: metadata.capturedAt, cue: metadata.cue }) },
+      requestBody: { name: safeName(metadata.originalName || photo.originalFilename || undefined), parents: [folderId], description: JSON.stringify({ source: metadata.source, width: metadata.width, height: metadata.height, capturedAt: metadata.capturedAt }) },
       media: { mimeType: photo.mimetype || undefined, body: createReadStream(photo.filepath) },
       fields: 'id',
     });
