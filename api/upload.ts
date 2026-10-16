@@ -11,6 +11,21 @@ const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 type Metadata = { source?: 'camera' | 'device'; originalName?: string; width?: number; height?: number; capturedAt?: string };
 
+function driveAuth() {
+  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN;
+  if (clientId && clientSecret && refreshToken) {
+    const auth = new google.auth.OAuth2(clientId, clientSecret);
+    auth.setCredentials({ refresh_token: refreshToken });
+    return auth;
+  }
+
+  const credentials = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  if (credentials) return new google.auth.GoogleAuth({ credentials: JSON.parse(credentials), scopes: ['https://www.googleapis.com/auth/drive.file'] });
+  throw new Error('Upload service is not configured.');
+}
+
 function applyCors(request: VercelRequest, response: VercelResponse) {
   const origin = request.headers.origin;
   const allowedOrigin = process.env.ALLOWED_ORIGIN;
@@ -56,11 +71,9 @@ export default async function handler(request: VercelRequest, response: VercelRe
       try { metadata = JSON.parse(metadataText) as Metadata; } catch { return response.status(400).json({ error: 'Invalid photo metadata.' }); }
     }
 
-    const credentials = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-    if (!credentials || !folderId) throw new Error('Upload service is not configured.');
-    const auth = new google.auth.GoogleAuth({ credentials: JSON.parse(credentials), scopes: ['https://www.googleapis.com/auth/drive.file'] });
-    const drive = google.drive({ version: 'v3', auth });
+    if (!folderId) throw new Error('Upload service is not configured.');
+    const drive = google.drive({ version: 'v3', auth: driveAuth() });
     const uploaded = await drive.files.create({
       requestBody: { name: safeName(metadata.originalName || photo.originalFilename || undefined), parents: [folderId], description: JSON.stringify({ source: metadata.source, width: metadata.width, height: metadata.height, capturedAt: metadata.capturedAt }) },
       media: { mimeType: photo.mimetype || undefined, body: createReadStream(photo.filepath) },

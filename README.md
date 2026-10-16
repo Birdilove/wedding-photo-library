@@ -16,10 +16,11 @@ Base path: defaults to `/<repo-name>/`. For a custom domain set the repo variabl
 
 The frontend is still hosted on GitHub Pages. Deploy this same repository to Vercel to host only `api/upload`.
 
-1. In Google Cloud, create a service account, enable the Google Drive API, and create a JSON key. Create a dedicated Google Drive folder and share it with the service account's email address as **Editor**.
+1. For a personal Gmail Drive, create an OAuth 2.0 web client in Google Cloud and use the Google OAuth Playground to obtain a refresh token for your own account. For a Google Workspace Shared Drive, a service account is also supported.
 2. Import the repository into Vercel. Add these Production environment variables there (never in GitHub Pages or the frontend):
-   - `GOOGLE_SERVICE_ACCOUNT_JSON`: the complete JSON from the service-account key.
    - `GOOGLE_DRIVE_FOLDER_ID`: the ID in the Drive folder URL.
+   - Personal Gmail: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REFRESH_TOKEN`.
+   - Shared Drive only: `GOOGLE_SERVICE_ACCOUNT_JSON`, the complete JSON from the service-account key.
    - `ALLOWED_ORIGIN`: `https://photos.birdistudios.com`
 3. Set the GitHub repository variable `VITE_UPLOAD_API_URL` to `https://YOUR-VERCEL-PROJECT.vercel.app/api/upload`. GitHub Pages injects this during its existing build.
 4. Redeploy GitHub Pages. Uploads are JPEG, PNG, or WebP and must be no larger than 4 MB. The app processes selected images into JPEG before sending them.
