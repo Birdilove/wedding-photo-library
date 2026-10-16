@@ -4,7 +4,7 @@ export const wedding = {
   couple: 'Brownie & Lovepreet',
   date: 'Our Wedding Day',
   welcome: 'Help us capture the little moments that make today unforgettable.',
-  footer: 'Made for my Pastry, Brownie, Kkinnu, Puff; With LOVE',
+  footer: 'Made for my Pastry, Brownie, Kinnu, Puff; With LOVE',
 };
 // Edit this list to change the photo cues guests see.
 const subjects = ['the food stalls', 'the wedding venue', 'the stage', 'Gurudwara Sahib', 'the decorations',
