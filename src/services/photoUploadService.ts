@@ -1,4 +1,5 @@
 import type { PhotoMetadata, UploadResult } from '../types/photo';
+import { getDeviceId } from './deviceId';
 export interface PhotoUploadService { uploadPhoto(file: File, metadata: PhotoMetadata): Promise<UploadResult> }
 
 const maxUploadBytes = 4 * 1024 * 1024;
@@ -12,7 +13,7 @@ export class HttpUploadService implements PhotoUploadService {
 
     const body = new FormData();
     body.append('photo', file, file.name);
-    body.append('metadata', JSON.stringify(metadata));
+    body.append('metadata', JSON.stringify({ ...metadata, deviceId: getDeviceId() }));
     const response = await fetch(this.endpoint, { method: 'POST', body });
     const result = await response.json().catch(() => null) as { id?: string; error?: string } | null;
     if (!response.ok || !result?.id) throw new Error(result?.error || 'Photo upload failed. Please retry.');

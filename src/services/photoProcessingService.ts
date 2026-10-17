@@ -7,15 +7,23 @@ export function fitWithin(w: number, h: number, max = limits.maxDimension) {
 export class UnsupportedImageError extends Error {}
 export function isImageFile(f: File) { return f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name); }
 
+const MAX_BYTES = 3.8 * 1024 * 1024; // server accepts 4 MB; keep headroom
+/** Encode as JPEG, lowering quality and then size until the file fits under MAX_BYTES. */
 async function toJpeg(src: CanvasImageSource, sw: number, sh: number, name: string): Promise<{ file: File; width: number; height: number }> {
-  const { width, height } = fitWithin(sw, sh);
-  const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+  let { width, height } = fitWithin(sw, sh);
+  const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d'); if (!ctx) throw new Error('Canvas unavailable');
-  ctx.drawImage(src, 0, 0, width, height);
-  const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', limits.jpegQuality));
-  canvas.width = canvas.height = 0; // release pixel memory
-  if (!blob) throw new Error('JPEG encoding failed');
-  return { file: new File([blob], name, { type: 'image/jpeg' }), width, height };
+  const encode = (q: number) => new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', q));
+  try {
+    for (;;) {
+      canvas.width = width; canvas.height = height; ctx.drawImage(src, 0, 0, width, height);
+      let q = limits.jpegQuality; let blob = await encode(q);
+      while (blob && blob.size > MAX_BYTES && q > 0.55) { q -= 0.1; blob = await encode(q); }
+      if (!blob) throw new Error('JPEG encoding failed');
+      if (blob.size <= MAX_BYTES || Math.max(width, height) < 1000) return { file: new File([blob], name, { type: 'image/jpeg' }), width, height };
+      width = Math.round(width * 0.85); height = Math.round(height * 0.85);
+    }
+  } finally { canvas.width = canvas.height = 0; } // release pixel memory
 }
 export const processVideoFrame = (v: HTMLVideoElement) =>
   toJpeg(v, v.videoWidth, v.videoHeight, `camera-${Date.now()}.jpg`);
