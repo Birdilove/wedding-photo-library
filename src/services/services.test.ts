@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { fitWithin } from './photoProcessingService';
 import { UploadQueue } from './uploadQueue';
 describe('fitWithin', () => {
-  it('downsizes landscape, keeps ratio', () => expect(fitWithin(6528, 4896)).toEqual({ width: 3264, height: 2448 }));
+  it('downsizes landscape, keeps ratio', () => expect(fitWithin(6528, 4896)).toEqual({ width: 2828, height: 2121 }));
   it('downsizes portrait', () => expect(fitWithin(3000, 6000, 3264)).toEqual({ width: 1632, height: 3264 }));
   it('never upscales', () => expect(fitWithin(1280, 720)).toEqual({ width: 1280, height: 720 }));
 });

@@ -1,5 +1,6 @@
 import type { PhotoMetadata, UploadResult } from '../types/photo';
 import { getDeviceId } from './deviceId';
+import { UploadError } from './retry';
 export interface PhotoUploadService { uploadPhoto(file: File, metadata: PhotoMetadata): Promise<UploadResult> }
 
 const maxUploadBytes = 4 * 1024 * 1024;
@@ -9,14 +10,16 @@ export class HttpUploadService implements PhotoUploadService {
 
   async uploadPhoto(file: File, metadata: PhotoMetadata): Promise<UploadResult> {
     if (!this.endpoint) throw new Error('Photo uploads are not configured yet. Please try again later.');
-    if (file.size > maxUploadBytes) throw new Error('This photo is too large to upload. Please choose another photo.');
+    if (file.size > maxUploadBytes) throw new UploadError('This photo is too large to upload.', false);
 
     const body = new FormData();
     body.append('photo', file, file.name);
     body.append('metadata', JSON.stringify({ ...metadata, deviceId: getDeviceId() }));
-    const response = await fetch(this.endpoint, { method: 'POST', body });
+    let response: Response;
+    try { response = await fetch(this.endpoint, { method: 'POST', body }); }
+    catch { throw new UploadError('No connection. Please check your signal.'); } // network drop: worth retrying
     const result = await response.json().catch(() => null) as { id?: string; error?: string } | null;
-    if (!response.ok || !result?.id) throw new Error(result?.error || 'Photo upload failed. Please retry.');
+    if (!response.ok || !result?.id) throw new UploadError(result?.error || 'Photo upload failed. Please retry.', response.status >= 500 || response.status === 408); // 4xx are permanent
     return { id: result.id };
   }
 }
