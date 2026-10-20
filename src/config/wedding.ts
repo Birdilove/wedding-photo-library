@@ -1,10 +1,10 @@
 // Placeholders: edit freely.
 export const limits = { cameraMaxPhotos: 5, maxDimension: 2828, jpegQuality: 0.8, uploadConcurrency: 2 };
 export const wedding = {
-  couple: 'Brownie & Lovepreet',
+  couple: 'Manpreet & Lovepreet',
   date: 'Our Wedding Day',
   welcome: 'Help us capture the little moments that make today unforgettable.',
-  footer: 'Made for my Pastry, Brownie, Kinnu, Puff; With LOVE',
+  footer: 'Made for Manpreet',
 };
 // Edit this list to change the photo cues guests see.
 const subjects = ['the food stalls', 'the wedding venue', 'the stage', 'Gurudwara Sahib', 'the decorations',
