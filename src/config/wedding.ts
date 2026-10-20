@@ -1,5 +1,5 @@
 // Placeholders: edit freely.
-export const limits = { cameraMaxPhotos: 5, maxDimension: 2323, jpegQuality: 0.7, uploadConcurrency: 2 };
+export const limits = { cameraMaxPhotos: 5, maxDimension: 2828, jpegQuality: 0.8, uploadConcurrency: 2 };
 export const wedding = {
   couple: 'Manpreet & Lovepreet',
   date: 'Our Wedding Day',
