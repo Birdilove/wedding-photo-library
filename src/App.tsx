@@ -13,8 +13,5 @@ export default function App() {
   return (<Suspense fallback={<main className="screen" />}>
     {v.n === 'home' && <HomeScreen cue={cue} onCamera={camera} />}
     {v.n === 'camera' && <CameraScreen key={v.k} cue={cue} onBack={home} onDone={done} />}
-    {v.n === 'done' && <CompletionScreen cue={cue} onCamera={camera} onHome={home} />}
-    {v.n === 'home' && <a className="privacy-link" href={`${import.meta.env.BASE_URL}privacy-policy.html`}
-      style={{ position: 'fixed', left: 0, right: 0, bottom: 'max(0.5rem, env(safe-area-inset-bottom))', textAlign: 'center',
-        fontSize: '0.8rem', color: 'inherit', opacity: 0.65 }}>Privacy Policy</a>}</Suspense>);
+    {v.n === 'done' && <CompletionScreen cue={cue} onCamera={camera} onHome={home} />}</Suspense>);
 }

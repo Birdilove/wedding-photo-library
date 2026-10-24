@@ -1,6 +1,7 @@
 // Placeholders: edit freely.
 export const limits = { cameraMaxPhotos: 5, maxDimension: 2828, jpegQuality: 0.8, uploadConcurrency: 2 };
 export const wedding = {
+  appName: 'Wedding Photos Library',
   couple: 'Manpreet & Lovepreet',
   date: 'Our Wedding Day',
   welcome: 'Help us capture the little moments that make today unforgettable.',
