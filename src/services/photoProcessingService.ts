@@ -1,7 +1,7 @@
 import { limits } from '../config/wedding';
-/** Fit within max on the longest side, keep aspect ratio, never upscale. */
-export function fitWithin(w: number, h: number, max = limits.maxDimension) {
-  const s = Math.min(1, max / Math.max(w, h));
+/** Fit within a total pixel budget (4 MP by default), keep aspect ratio, never upscale. */
+export function fitWithin(w: number, h: number, maxPixels = limits.maxPixels) {
+  const s = Math.min(1, Math.sqrt(maxPixels / (w * h)));
   return { width: Math.max(1, Math.round(w * s)), height: Math.max(1, Math.round(h * s)) };
 }
 export class UnsupportedImageError extends Error {}
@@ -9,14 +9,21 @@ export function isImageFile(f: File) { return f.type.startsWith('image/') || /\.
 
 const MAX_BYTES = 3.8 * 1024 * 1024; // server accepts 4 MB; keep headroom
 /** Encode as JPEG, lowering quality and then size until the file fits under MAX_BYTES. */
-async function toJpeg(src: CanvasImageSource, sw: number, sh: number, name: string): Promise<{ file: File; width: number; height: number }> {
+type Crop = { x: number; y: number; w: number; h: number };
+/** Centre region of a w x h frame that stays visible at the given digital zoom (1 = whole frame). */
+export function centerCrop(w: number, h: number, zoom: number): Crop {
+  const z = Math.max(1, zoom); const cw = Math.max(1, Math.round(w / z)); const ch = Math.max(1, Math.round(h / z));
+  return { x: Math.round((w - cw) / 2), y: Math.round((h - ch) / 2), w: cw, h: ch };
+}
+async function toJpeg(src: CanvasImageSource, sw: number, sh: number, name: string, crop?: Crop): Promise<{ file: File; width: number; height: number }> {
   let { width, height } = fitWithin(sw, sh);
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d'); if (!ctx) throw new Error('Canvas unavailable');
   const encode = (q: number) => new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', q));
   try {
     for (;;) {
-      canvas.width = width; canvas.height = height; ctx.drawImage(src, 0, 0, width, height);
+      canvas.width = width; canvas.height = height;
+      if (crop) ctx.drawImage(src, crop.x, crop.y, crop.w, crop.h, 0, 0, width, height); else ctx.drawImage(src, 0, 0, width, height);
       let q = limits.jpegQuality; let blob = await encode(q);
       while (blob && blob.size > MAX_BYTES && q > 0.55) { q -= 0.1; blob = await encode(q); }
       if (!blob) throw new Error('JPEG encoding failed');
@@ -25,8 +32,13 @@ async function toJpeg(src: CanvasImageSource, sw: number, sh: number, name: stri
     }
   } finally { canvas.width = canvas.height = 0; } // release pixel memory
 }
-export const processVideoFrame = (v: HTMLVideoElement) =>
-  toJpeg(v, v.videoWidth, v.videoHeight, `camera-${Date.now()}.jpg`);
+/** zoom > 1 = digital zoom: keep only the centre of the frame, matching the zoomed preview. */
+export function processVideoFrame(v: HTMLVideoElement, zoom = 1) {
+  const name = `camera-${Date.now()}.jpg`;
+  if (zoom <= 1) return toJpeg(v, v.videoWidth, v.videoHeight, name);
+  const c = centerCrop(v.videoWidth, v.videoHeight, zoom);
+  return toJpeg(v, c.w, c.h, name, c);
+}
 
 export async function processImageFile(f: File) {
   if (!isImageFile(f)) throw new UnsupportedImageError('This is not a photo.');

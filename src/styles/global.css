@@ -47,3 +47,10 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 .privacy-link{display:inline-block;padding:10px 8px;font-size:.85rem;color:var(--mute);text-decoration:underline;text-underline-offset:3px}
 .privacy-link:hover{color:var(--accent)}
 .privacy-link:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radius:4px}
+
+/* Camera zoom buttons (1x / 1.5x / 2x) */
+.zoom{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(29,26,24,.55)}
+.zoom button{min-width:52px;min-height:44px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:#fff;font:600 .95rem var(--sans);font-variant-numeric:tabular-nums;cursor:pointer}
+.zoom button[aria-pressed="true"]{background:rgba(251,247,240,.95);color:var(--ink)}
+.zoom button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){.viewfinder video{transition:transform .15s}}

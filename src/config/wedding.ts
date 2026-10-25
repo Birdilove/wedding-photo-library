@@ -1,5 +1,5 @@
 // Placeholders: edit freely.
-export const limits = { cameraMaxPhotos: 5, maxDimension: 2828, jpegQuality: 0.8, uploadConcurrency: 2 };
+export const limits = { cameraMaxPhotos: 5, maxPixels: 4_000_000, jpegQuality: 0.7, uploadConcurrency: 3 };
 export const wedding = {
   appName: 'Wedding Photos Library',
   couple: 'Manpreet & Lovepreet',

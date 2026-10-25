@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { limits } from '../config/wedding';
-import { useCamera, type CameraError } from '../hooks/useCamera';
+import { useCamera, ZOOM_LEVELS, type CameraError } from '../hooks/useCamera';
 import { useUploadSession } from '../hooks/useUploadSession';
 import { processVideoFrame } from '../services/photoProcessingService';
 import { PhotoThumbnail } from './PhotoThumbnail';
@@ -24,7 +24,7 @@ export function CameraScreen({ cue, onBack, onDone }: { cue: string; onBack: () 
     busy.current = true; setCaptureErr(''); setCount(c => c + 1);
     const id = s.begin('');
     try {
-      const frame = processVideoFrame(v); busy.current = false; // frame grab is synchronous; unlock for next shot
+      const frame = processVideoFrame(v, cam.digitalZoom); busy.current = false; // frame grab is synchronous; unlock for next shot
       const r = await frame;
       s.ready(id, r.file, { source: 'camera', width: r.width, height: r.height, capturedAt: new Date().toISOString(), cue });
     } catch { busy.current = false; s.fail(id, 'Capture failed. This photo was not saved.'); setCaptureErr('Capture failed. Try again.'); }
@@ -37,7 +37,9 @@ export function CameraScreen({ cue, onBack, onDone }: { cue: string; onBack: () 
     <p className="cuebar">{cue}</p>
     {finished ? (<section className="finishing"><h3>{s.pending ? 'Sending your photos…' : 'Some photos need attention'}</h3>
       <UploadProgress items={s.items} onRetry={s.retry} canRetry={s.canRetry} /></section>) : (<>
-      <div className="viewfinder"><video ref={cam.videoRef} className={cam.facing === 'user' ? 'mirror' : ''} playsInline muted autoPlay />
+      <div className="viewfinder"><video ref={cam.videoRef} className={cam.facing === 'user' ? 'mirror' : ''} style={cam.digitalZoom > 1 ? { transform: `scale(${cam.digitalZoom})` } : undefined} playsInline muted autoPlay />
+        {cam.canZoom && cam.ready && !cam.error && <div className="zoom" role="group" aria-label="Zoom">{ZOOM_LEVELS.map(z =>
+          <button key={z} aria-pressed={cam.zoom === z} onClick={() => void cam.setZoom(z)}>{z}×</button>)}</div>}
         {cam.multi && !cam.error && <button className="flip" aria-label="Switch camera" disabled={!cam.ready} onClick={() => void cam.flip()}>⟲</button>}
         {cam.error && <div className="camerr"><p>{msg[cam.error]}</p>{cam.error !== 'insecure' && <button className="btn secondary" onClick={() => void cam.start()}>Try again</button>}<button className="btn secondary" onClick={() => void navigator.clipboard?.writeText(location.href)}>Copy link</button><button className="btn secondary" onClick={back}>Back to home</button></div>}
         {full && <div className="limit">You’ve reached 5 photos. Tap Finish.</div>}</div>
